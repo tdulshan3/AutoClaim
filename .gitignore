@@ -1,0 +1,11 @@
+node_modules/
+web/dist/
+
+# Holds your session cookies. Never commit.
+server/data/
+.env
+.env.local
+*.log
+
+# Where the CI run reconstructs config.json from the encrypted secret.
+.runtime/

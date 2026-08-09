@@ -1,0 +1,44 @@
+services:
+  autoclaim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: autoclaim:latest
+    container_name: autoclaim
+    restart: unless-stopped
+
+    # Published on host loopback only. This process holds live xm100.vn session
+    # cookies and has no authentication of its own, so anyone who can reach the
+    # port owns the accounts. Plain "8787:8787" would publish it on every
+    # interface, including the LAN. Widen it only behind an authenticating proxy.
+    ports:
+      - "127.0.0.1:8787:8787"
+
+    # Bind-mounted rather than a named volume so the container shares the same
+    # profiles and log as a plain `npm start`, and existing ones carry over with
+    # no migration step. The path must match DATA_DIR in the Dockerfile (/data);
+    # mounting over /app/server/data instead would silently do nothing, because
+    # the app no longer reads from there. Host uid must be 1000 to match the
+    # image's `node` user.
+    volumes:
+      - ./server/data:/data
+
+    environment:
+      # Only used to seed a first profile on a fresh install, and ignored once
+      # any profile exists. Normally you add profiles through the UI.
+      CONNECT_SID: "${CONNECT_SID:-}"
+      SERVER_TYPE: "${SERVER_TYPE:-ase}"
+      CLAIM_TIMEZONE: "${CLAIM_TIMEZONE:-Asia/Ho_Chi_Minh}"
+
+    # The scheduler is a 5-minute timer and a handful of HTTP calls; it does not
+    # need much, and a cap means a runaway can't take the host with it.
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

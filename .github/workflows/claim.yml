@@ -1,0 +1,79 @@
+name: Daily claim
+
+on:
+  schedule:
+    # The attendance day rolls over at midnight Asia/Ho_Chi_Minh, which is
+    # 17:00 UTC. Four runs a day rather than one: GitHub delays scheduled
+    # workflows under load, sometimes by a lot, and the app skips a day it has
+    # already settled - so extra runs cost nothing and buy resilience.
+    - cron: "15 18 * * *"   # 01:15 Vietnam, just after rollover
+    - cron: "15 0 * * *"    # 07:15 Vietnam
+    - cron: "15 6 * * *"    # 13:15 Vietnam
+    - cron: "15 12 * * *"   # 19:15 Vietnam
+  workflow_dispatch:        # lets you run it by hand from the Actions tab
+
+# Two runs at once could both claim before either records it.
+concurrency:
+  group: autoclaim
+  cancel-in-progress: false
+
+permissions:
+  contents: write           # to commit the updated log back
+
+jobs:
+  claim:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install runtime dependencies
+        run: npm ci --omit=dev --ignore-scripts
+
+      - name: Restore state
+        env:
+          # Session cookies live in an encrypted secret, never in the repo.
+          AUTOCLAIM_CONFIG: ${{ secrets.AUTOCLAIM_CONFIG }}
+        run: |
+          mkdir -p .runtime
+          if [ -z "$AUTOCLAIM_CONFIG" ]; then
+            echo "AUTOCLAIM_CONFIG secret is not set." >&2
+            exit 1
+          fi
+          printf '%s' "$AUTOCLAIM_CONFIG" > .runtime/config.json
+          chmod 600 .runtime/config.json
+          # The log is version controlled, so history survives between runs and
+          # the commits double as the repo activity that keeps scheduled
+          # workflows from being disabled after 60 idle days.
+          if [ -f state/log.json ]; then cp state/log.json .runtime/log.json; fi
+
+      - name: Claim
+        env:
+          DATA_DIR: ${{ github.workspace }}/.runtime
+        run: node server/claim-once.js
+
+      - name: Write run summary
+        if: always()
+        env:
+          DATA_DIR: ${{ github.workspace }}/.runtime
+        run: node deploy/gh-summary.js >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Persist log
+        if: always()
+        run: |
+          mkdir -p state
+          if [ -f .runtime/log.json ]; then cp .runtime/log.json state/log.json; fi
+          # Belt and braces: the cookies must never reach a commit.
+          rm -f .runtime/config.json
+          if [ -n "$(git status --porcelain state/log.json)" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add state/log.json
+            git commit -m "chore: claim log $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "log unchanged, nothing to commit"
+          fi

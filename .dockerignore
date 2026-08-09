@@ -1,0 +1,16 @@
+node_modules
+web/node_modules
+web/dist
+
+# Never bake local session cookies or claim history into an image.
+server/data
+.env
+.env.local
+
+.git
+.gitignore
+*.log
+README.md
+Dockerfile
+compose.yml
+docker-compose.yml
