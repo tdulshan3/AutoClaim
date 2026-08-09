@@ -86,6 +86,13 @@ function classify(status, body, text) {
 
   if (status === 401 || status === 403) return { outcome: 'auth', message: 'Session rejected' };
 
+  // The site answers an unauthenticated request with a 200 and
+  // {"authenticated":false}, which would otherwise sail through the success
+  // path below and be recorded as a claim that never happened.
+  if (body && body.authenticated === false) {
+    return { outcome: 'auth', message: 'Session is not authenticated' };
+  }
+
   // Some sites answer 200 with a login page instead of a 401.
   if (/<!doctype html|<html/i.test(text || '')) {
     return { outcome: 'auth', message: 'Got an HTML page instead of JSON, the session has expired' };
@@ -191,7 +198,10 @@ export async function fetchAccount(profile) {
     return {
       authOk: false,
       account: null,
-      message: result.message || 'This session is not authenticated',
+      // Deliberately not result.message: a 200 with authenticated:false used to
+      // surface here as the word "Claimed", which reads as the opposite of what
+      // it means.
+      message: 'This session cookie is no longer valid, paste a fresh one',
       status: result.status,
     };
   }

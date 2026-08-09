@@ -187,6 +187,39 @@ oversubscribed, and Always Free is only offered in the tenancy's home region, so
 there is no other region or AD to fall back to. Retrying on a loop until one
 frees up is the normal way through it.
 
+## Running it on someone else's server
+
+Everything needed is in this repo, and no credentials are: profiles and cookies
+live in `server/data/`, which is gitignored, and CI reads them from an encrypted
+secret. So the repo is safe to hand to someone else.
+
+Each instance is separate. Whoever runs it adds their own profiles through the
+UI with their own `connect.sid`; nothing is shared between installs.
+
+On **Proxmox**, either shape works:
+
+- **LXC container** (lightest). Docker inside LXC needs the container marked
+  privileged-ish with nesting enabled, which is a faff for one small app -
+  running Node directly is usually simpler:
+
+  ```bash
+  npm ci && npm run build
+  npm start          # or a systemd unit pointing at server/index.js
+  ```
+
+- **VM** - use the Docker path exactly as documented above, nothing special.
+
+One thing to get right either way: `compose.yml` publishes to `127.0.0.1`, so by
+default the UI is reachable only from the host itself. To reach it from
+elsewhere on the LAN you'd change that to `0.0.0.0`, and at that point **anyone
+on the network can add or delete profiles and claim as you** - the app has no
+login. On a home LAN that may be an acceptable trade; over the internet it is
+not. An SSH tunnel keeps it private with no such trade:
+
+```bash
+ssh -L 8787:127.0.0.1:8787 user@server
+```
+
 ## Steam and Epic
 
 xm100.vn credits attendance points to a game account, and an ARK player arrives
