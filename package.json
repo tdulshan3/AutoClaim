@@ -10,7 +10,9 @@
     "dev:server": "node --watch server/index.js",
     "dev:web": "npm --prefix web run dev",
     "build": "npm --prefix web run build",
-    "start": "NODE_ENV=production node server/index.js"
+    "start": "NODE_ENV=production node server/index.js",
+    "claim": "node server/claim-once.js",
+    "sync": "git pull -q --rebase && cp state/log.json server/data/log.json && echo 'local log synced from CI'"
   },
   "dependencies": {
     "express": "^4.21.2"

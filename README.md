@@ -104,6 +104,52 @@ sent back to the browser in full, only as a masked preview. Session cookies
 expire; when a profile starts logging `auth` rows it flags itself as expired and
 you paste a fresh one into that profile's Edit panel.
 
+## Running it on GitHub Actions (no server)
+
+`.github/workflows/claim.yml` claims on a schedule, so nothing has to be left
+running. The app's real job is one POST per profile per day, which suits a
+scheduled runner far better than an always-on box.
+
+Setup is two commands against a private repo:
+
+```bash
+gh secret set AUTOCLAIM_CONFIG < server/data/config.json
+gh workflow run "Daily claim"
+```
+
+The cookies live in an encrypted GitHub secret and are written to
+`.runtime/config.json` at run time, which is gitignored. The claim log is
+committed to `state/log.json` instead, so history survives between runs - and
+those commits double as the repo activity that stops GitHub disabling scheduled
+workflows after 60 idle days.
+
+It runs four times a day rather than once. GitHub delays scheduled workflows
+under load, sometimes badly, and a day that's already settled is skipped, so the
+extra runs cost nothing and just buy resilience against a missed slot.
+
+A rejected session cookie is the one outcome that fails the run on purpose, so
+GitHub emails you. Everything else is either fine or self-correcting, and
+failing daily on those would only teach you to ignore the alerts.
+
+### Seeing what happened
+
+There's no hosted UI - a scheduled runner has no server. Two ways to look:
+
+- **From anywhere**: each run writes a summary table to its own page in the
+  Actions tab, readable from the GitHub mobile app.
+- **The real UI**: run it locally whenever you want it.
+
+  ```bash
+  npm run sync          # pull the log CI has been building
+  docker compose up -d  # http://127.0.0.1:8787
+  ```
+
+  `npm run sync` matters because the local app reads `server/data/log.json`
+  while CI writes `state/log.json`; without it the UI shows only local history.
+
+Running locally at the same time is harmless. Both sides skip a day the server
+reports as already claimed, so the worst case is a wasted request.
+
 ## Hosting on Oracle Cloud (Always Free)
 
 ```bash
