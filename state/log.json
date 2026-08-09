@@ -1,5 +1,33 @@
 [
   {
+    "id": "mslb0ovq-1w52",
+    "at": "2026-08-09T04:30:13.238Z",
+    "profileId": "ef1f5d46-bb3b-4844-92f2-af04d765d051",
+    "profileName": "jeycey0389",
+    "kind": "auto",
+    "day": "2026-08-09",
+    "serverType": "ase",
+    "outcome": "unlinked",
+    "message": "No Steam or Epic account is linked to this xm100.vn account",
+    "originalMessage": "",
+    "status": 0,
+    "raw": null
+  },
+  {
+    "id": "mslb0na1-lbrb",
+    "at": "2026-08-09T04:30:11.161Z",
+    "profileId": "19bf4ffd-af78-46e8-8136-4e44c28d9946",
+    "profileName": "tdulshan",
+    "kind": "auto",
+    "day": "2026-08-09",
+    "serverType": "ase",
+    "outcome": "claimed",
+    "message": "Checked in successfully",
+    "originalMessage": "Điểm danh thành công! +100 Points",
+    "status": 200,
+    "raw": "{\"success\":true,\"message\":\"Điểm danh thành công! +100 Points\",\"colorPackClaimed\":\"\",\"newBalance\":1602,\"claimedDates\":[\"2026-08-01\",\"2026-08-05\",\"2026-08-06\",\"2026-08-07\",\"2026-08-08\",\"2026-08-09\"],\"bonusClaimed\":false}"
+  },
+  {
     "id": "mskj1rtg-l85t",
     "at": "2026-08-08T15:27:14.452Z",
     "profileId": "ef1f5d46-bb3b-4844-92f2-af04d765d051",
