@@ -1,0 +1,60 @@
+name: Docker build
+
+# Proves the image actually builds and runs before anyone self-hosts it.
+# Development happens on a machine without a container runtime, so without this
+# the Dockerfile would only ever be verified by whoever tried to deploy it.
+
+on:
+  push:
+    paths:
+      - "Dockerfile"
+      - "compose.yml"
+      - "package*.json"
+      - "server/**"
+      - "web/**"
+      - ".github/workflows/docker.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t autoclaim:test .
+
+      - name: Run it
+        run: |
+          docker run -d --name autoclaim-test -p 8787:8787 autoclaim:test
+          # Give it a moment; the app claims nothing without profiles, so an
+          # empty container is a safe thing to boot in CI.
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8787/api/status > /dev/null 2>&1; then
+              echo "up after ${i}s"; break
+            fi
+            sleep 1
+          done
+
+      - name: Smoke test
+        run: |
+          echo "--- /api/status ---"
+          curl -fsS http://127.0.0.1:8787/api/status | tee /tmp/status.json
+          echo
+          node -e '
+            const s = require("/tmp/status.json");
+            if (!s.scheduler?.today) throw new Error("no scheduler day in status");
+            if (s.profiles.length !== 0) throw new Error("expected a clean container");
+            console.log("status ok, day =", s.scheduler.today, "tz =", s.scheduler.timezone);
+          '
+          echo "--- UI is served ---"
+          curl -fsS http://127.0.0.1:8787/ | grep -q "<title>AutoClaim</title>" \
+            && echo "index.html ok" || { echo "UI not served"; exit 1; }
+
+      - name: Container logs
+        if: always()
+        run: docker logs autoclaim-test
+
+      - name: Clean up
+        if: always()
+        run: docker rm -f autoclaim-test || true
