@@ -1,5 +1,47 @@
 [
   {
+    "id": "mstbqtc9-1qta",
+    "at": "2026-08-14T19:12:41.481Z",
+    "profileId": "a538c546-f663-4bfb-939b-0c6ab32321bc",
+    "profileName": "tanujmalinda",
+    "kind": "auto",
+    "day": "2026-08-15",
+    "serverType": "ase",
+    "outcome": "unlinked",
+    "message": "No Steam or Epic account is linked to this xm100.vn account",
+    "originalMessage": "",
+    "status": 0,
+    "raw": null
+  },
+  {
+    "id": "mstbqrsm-hldi",
+    "at": "2026-08-14T19:12:39.478Z",
+    "profileId": "ef1f5d46-bb3b-4844-92f2-af04d765d051",
+    "profileName": "jeycey0389",
+    "kind": "auto",
+    "day": "2026-08-15",
+    "serverType": "ase",
+    "outcome": "unlinked",
+    "message": "No Steam or Epic account is linked to this xm100.vn account",
+    "originalMessage": "",
+    "status": 0,
+    "raw": null
+  },
+  {
+    "id": "mstbqq90-4ghc",
+    "at": "2026-08-14T19:12:37.476Z",
+    "profileId": "19bf4ffd-af78-46e8-8136-4e44c28d9946",
+    "profileName": "tdulshan",
+    "kind": "auto",
+    "day": "2026-08-15",
+    "serverType": "ase",
+    "outcome": "already",
+    "message": "You already checked in today",
+    "originalMessage": "Bạn đã điểm danh hôm nay rồi!",
+    "status": 400,
+    "raw": "{\"success\":false,\"message\":\"Bạn đã điểm danh hôm nay rồi!\"}"
+  },
+  {
     "id": "msrwirxq-ecq1",
     "at": "2026-08-13T19:18:45.998Z",
     "profileId": "a538c546-f663-4bfb-939b-0c6ab32321bc",
